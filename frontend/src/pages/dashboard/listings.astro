@@ -1,0 +1,268 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="My Listings - StaySphere">
+  <main class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">My Listings</h1>
+          <p class="mt-2 text-gray-600">Manage your properties and bookings</p>
+        </div>
+        <a href="/dashboard/listings/create" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+          Add New Listing
+        </a>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total Listings</dt>
+                <dd id="total-listings" class="text-lg font-medium text-gray-900">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Active Bookings</dt>
+                <dd id="active-bookings" class="text-lg font-medium text-gray-900">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Avg Rating</dt>
+                <dd id="avg-rating" class="text-lg font-medium text-gray-900">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
+                <dd id="total-earnings" class="text-lg font-medium text-gray-900">-</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listings Grid -->
+      <div id="listings-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="text-center py-12 col-span-full">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <p class="mt-4 text-lg text-gray-500">Loading your listings...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = 'http://localhost:8000/api';
+
+    async function loadListings() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/auth/login';
+        return;
+      }
+
+      try {
+        const [listingsRes, bookingsRes] = await Promise.all([
+          fetch(`${API_BASE}/my-listings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE}/host/bookings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        if (listingsRes.ok) {
+          const listingsData = await listingsRes.json();
+          const listings = listingsData.data || [];
+          renderListings(listings);
+          updateStats(listings);
+        }
+
+        if (bookingsRes.ok) {
+          const bookingsData = await bookingsRes.json();
+          const bookings = bookingsData.data || [];
+          updateBookingStats(bookings);
+        }
+
+      } catch (error) {
+        console.error('Failed to load listings:', error);
+        showError('Failed to load listings');
+      }
+    }
+
+    function renderListings(listings: any[]) {
+      const container = document.getElementById('listings-container');
+      if (!container) return;
+
+      if (listings.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 col-span-full">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <p class="mt-4 text-lg text-gray-500">No listings found</p>
+            <a href="/dashboard/listings/create" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+              Create Your First Listing
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = listings.map(listing => `
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <div class="relative h-48">
+            <img 
+              src="${listing.images?.[0] || '/placeholder-image.jpg'}" 
+              alt="${listing.title}"
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute top-2 right-2">
+              <span class="px-2 py-1 rounded-full text-xs font-medium ${listing.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                ${listing.is_active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">${listing.title}</h3>
+            <p class="text-sm text-gray-600 mb-2">${listing.city}, ${listing.country}</p>
+            
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-lg font-bold text-gray-900">$${listing.price_per_night}/night</span>
+              ${listing.average_rating > 0 ? `
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                  </svg>
+                  <span class="ml-1 text-sm text-gray-600">${listing.average_rating.toFixed(1)}</span>
+                </div>
+              ` : ''}
+            </div>
+            
+            <div class="flex space-x-2">
+              <a href="/dashboard/listings/${listing.id}/edit" class="flex-1 bg-blue-600 text-white text-center py-2 px-3 rounded text-sm hover:bg-blue-700">
+                Edit
+              </a>
+              <a href="/listings/${listing.id}" class="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-3 rounded text-sm hover:bg-gray-200">
+                View
+              </a>
+              <button onclick="toggleListing(${listing.id}, ${!listing.is_active})" class="px-3 py-2 rounded text-sm ${listing.is_active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}">
+                ${listing.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats(listings: any[]) {
+      const totalListings = listings.length;
+      const avgRating = listings.length > 0 
+        ? (listings.reduce((sum, listing) => sum + (listing.average_rating || 0), 0) / listings.length).toFixed(1)
+        : '0.0';
+
+      document.getElementById('total-listings')!.textContent = totalListings.toString();
+      document.getElementById('avg-rating')!.textContent = avgRating;
+    }
+
+    function updateBookingStats(bookings: any[]) {
+      const activeBookings = bookings.filter(booking => 
+        booking.status === 'confirmed' && new Date(booking.check_out) > new Date()
+      ).length;
+      
+      const totalEarnings = bookings
+        .filter(booking => booking.status === 'completed')
+        .reduce((sum, booking) => sum + parseFloat(booking.total_amount), 0);
+
+      document.getElementById('active-bookings')!.textContent = activeBookings.toString();
+      document.getElementById('total-earnings')!.textContent = `$${totalEarnings.toFixed(2)}`;
+    }
+
+    function showError(message: string) {
+      const container = document.getElementById('listings-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center py-12 col-span-full">
+            <svg class="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p class="mt-4 text-lg text-red-500">${message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Global function for toggle listing
+    (window as any).toggleListing = async function(listingId: number, activate: boolean) {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/listings/${listingId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ is_active: activate })
+        });
+
+        if (response.ok) {
+          loadListings(); // Reload listings
+        } else {
+          alert('Failed to update listing');
+        }
+      } catch (error) {
+        console.error('Failed to update listing:', error);
+        alert('Failed to update listing');
+      }
+    };
+
+    // Load listings on page load
+    document.addEventListener('DOMContentLoaded', loadListings);
+  </script>
+</Layout>

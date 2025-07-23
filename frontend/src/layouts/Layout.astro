@@ -1,0 +1,206 @@
+---
+import DarkModeToggle from '../components/DarkModeToggle.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "StaySphere - Book Unique Stays Around the Globe" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>{title}</title>
+    <script>
+      // Dark mode initialization (runs before page load to prevent flash)
+      if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <a href="/" class="flex items-center">
+              <svg class="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span class="ml-2 text-xl font-bold text-gray-900 dark:text-white">StaySphere</span>
+            </a>
+          </div>
+          
+          <div class="hidden md:block">
+            <div class="ml-10 flex items-baseline space-x-4">
+              <a href="/listings" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Browse Stays</a>
+              <a href="/host" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Become a Host</a>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <DarkModeToggle />
+            <div id="auth-buttons" class="flex items-center space-x-2">
+              <a href="/auth/login" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Sign In</a>
+              <a href="/auth/register" class="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">Sign Up</a>
+            </div>
+            <div id="user-menu" class="hidden relative">
+              <button id="user-menu-button" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
+                <img id="user-avatar" class="h-8 w-8 rounded-full" src="/default-avatar.jpg" alt="User avatar" />
+              </button>
+              <div id="user-dropdown" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700">
+                <div class="py-1">
+                  <a href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Dashboard</a>
+                  <a href="/dashboard/bookings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">My Bookings</a>
+                  <a href="/dashboard/listings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">My Listings</a>
+                  <a href="/dashboard/messages" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Messages</a>
+                  <div class="border-t border-gray-100 dark:border-gray-700"></div>
+                  <button id="logout-btn" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Sign Out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <slot />
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 dark:bg-gray-950 text-white transition-colors duration-200">
+      <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="col-span-1 md:col-span-2">
+            <div class="flex items-center">
+              <svg class="h-8 w-8 text-blue-400 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span class="ml-2 text-xl font-bold">StaySphere</span>
+            </div>
+            <p class="mt-4 text-gray-300 dark:text-gray-400">
+              Book unique stays around the globe. From cozy apartments to luxury villas.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 dark:text-gray-500 tracking-wider uppercase">Company</h3>
+            <ul class="mt-4 space-y-4">
+              <li><a href="/about" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">About</a></li>
+              <li><a href="/careers" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">Careers</a></li>
+              <li><a href="/press" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">Press</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 dark:text-gray-500 tracking-wider uppercase">Support</h3>
+            <ul class="mt-4 space-y-4">
+              <li><a href="/help" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">Help Center</a></li>
+              <li><a href="/contact" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">Contact Us</a></li>
+              <li><a href="/terms" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">Terms</a></li>
+              <li><a href="/privacy" class="text-base text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-gray-200 transition-colors">Privacy</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-8 border-t border-gray-700 dark:border-gray-800 pt-8">
+          <p class="text-base text-gray-400 dark:text-gray-500 text-center">
+            &copy; 2024 StaySphere. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Dark mode toggle functionality
+      function initDarkModeToggle() {
+        const toggle = document.getElementById('dark-mode-toggle');
+        
+        if (!toggle) return;
+        
+        // Toggle dark mode
+        function toggleDarkMode() {
+          const isDark = document.documentElement.classList.contains('dark');
+          
+          if (isDark) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+          } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+          }
+        }
+        
+        // Add click event listener
+        toggle.addEventListener('click', toggleDarkMode);
+      }
+
+      // Auth state management
+      function updateAuthUI() {
+        const token = localStorage.getItem('auth_token');
+        const user = localStorage.getItem('user');
+        const authButtons = document.getElementById('auth-buttons');
+        const userMenu = document.getElementById('user-menu');
+        
+        if (token && user) {
+          const userData = JSON.parse(user);
+          authButtons?.classList.add('hidden');
+          userMenu?.classList.remove('hidden');
+          
+          const userAvatar = document.getElementById('user-avatar');
+          if (userAvatar && userData.avatar) {
+            userAvatar.src = userData.avatar;
+          }
+        } else {
+          authButtons?.classList.remove('hidden');
+          userMenu?.classList.add('hidden');
+        }
+      }
+      
+      // User menu toggle
+      document.getElementById('user-menu-button')?.addEventListener('click', function() {
+        const dropdown = document.getElementById('user-dropdown');
+        dropdown?.classList.toggle('hidden');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('user-menu');
+        const dropdown = document.getElementById('user-dropdown');
+        if (userMenu && !userMenu.contains(event.target as Node)) {
+          dropdown?.classList.add('hidden');
+        }
+      });
+      
+      // Logout functionality
+      document.getElementById('logout-btn')?.addEventListener('click', function() {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        window.location.href = '/';
+      });
+      
+      // Initialize everything on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        initDarkModeToggle();
+        updateAuthUI();
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+</style>

@@ -1,0 +1,92 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SearchBar from '../components/SearchBar.astro';
+import ListingCard from '../components/ListingCard.astro';
+
+// Fetch featured listings
+const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000/api';
+
+let listings = [];
+try {
+  const response = await fetch(`${API_BASE}/listings?featured=true&limit=8`);
+  if (response.ok) {
+    const data = await response.json();
+    listings = data.data || [];
+  }
+} catch (error) {
+  console.error('Failed to fetch listings:', error);
+}
+---
+
+<Layout title="StaySphere - Book Unique Stays Around the Globe">
+  <main>
+    <!-- Hero Section -->
+    <section class="relative h-screen bg-gradient-to-r from-blue-600 to-purple-700">
+      <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+      <div class="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
+        <h1 class="text-5xl md:text-7xl font-bold mb-6">
+          Find Your Perfect Stay
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 max-w-2xl">
+          Discover unique accommodations around the globe. From cozy apartments to luxury villas.
+        </p>
+        <SearchBar />
+      </div>
+    </section>
+
+    <!-- Featured Listings -->
+    <section class="py-16 px-4 max-w-7xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+        Featured Stays
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {listings.map((listing) => (
+          <ListingCard listing={listing} />
+        ))}
+      </div>
+      <div class="text-center mt-12">
+        <a href="/listings" class="bg-blue-600 dark:bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+          View All Listings
+        </a>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="bg-gray-50 dark:bg-gray-800 py-16 px-4 transition-colors duration-200">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
+          How StaySphere Works
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="text-center">
+            <div class="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Search & Discover</h3>
+            <p class="text-gray-600 dark:text-gray-300">Find the perfect stay by location, dates, and preferences</p>
+          </div>
+          <div class="text-center">
+            <div class="bg-green-100 dark:bg-green-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Book Securely</h3>
+            <p class="text-gray-600 dark:text-gray-300">Secure payment processing with instant confirmation</p>
+          </div>
+          <div class="text-center">
+            <div class="bg-purple-100 dark:bg-purple-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Enjoy Your Stay</h3>
+            <p class="text-gray-600 dark:text-gray-300">Experience unique accommodations and create memories</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>

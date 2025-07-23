@@ -1,0 +1,157 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BookingForm from '../../components/BookingForm.astro';
+
+const { id } = Astro.params;
+const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000/api';
+
+let listing = null;
+let error = null;
+
+try {
+  const response = await fetch(`${API_BASE}/listings/${id}`);
+  if (response.ok) {
+    const data = await response.json();
+    listing = data.data;
+  } else {
+    error = 'Listing not found';
+  }
+} catch (e) {
+  error = 'Failed to load listing';
+}
+
+if (!listing) {
+  return Astro.redirect('/listings');
+}
+---
+
+<Layout title={`Book ${listing.title} - StaySphere`}>
+  <main class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <nav class="flex" aria-label="Breadcrumb">
+          <ol class="flex items-center space-x-4">
+            <li>
+              <a href="/listings" class="text-gray-500 hover:text-gray-700">Listings</a>
+            </li>
+            <li>
+              <svg class="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </li>
+            <li>
+              <a href={`/listings/${listing.id}`} class="text-gray-500 hover:text-gray-700">{listing.title}</a>
+            </li>
+            <li>
+              <svg class="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </li>
+            <li class="text-gray-900">Book Now</li>
+          </ol>
+        </nav>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Property Summary -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <div class="aspect-w-16 aspect-h-9">
+            <img 
+              src={listing.images?.[0] || '/placeholder-image.jpg'} 
+              alt={listing.title}
+              class="w-full h-64 object-cover"
+            />
+          </div>
+          <div class="p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">{listing.title}</h1>
+            <p class="text-gray-600 mb-4">{listing.location}</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{listing.bedrooms || 0}</div>
+                <div class="text-sm text-gray-500">Bedrooms</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{listing.bathrooms || 0}</div>
+                <div class="text-sm text-gray-500">Bathrooms</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{listing.max_guests || 0}</div>
+                <div class="text-sm text-gray-500">Guests</div>
+              </div>
+            </div>
+
+            <div class="border-t pt-4">
+              <h3 class="font-semibold text-gray-900 mb-2">About this place</h3>
+              <p class="text-gray-600 text-sm">{listing.description}</p>
+            </div>
+
+            {listing.amenities && listing.amenities.length > 0 && (
+              <div class="border-t pt-4 mt-4">
+                <h3 class="font-semibold text-gray-900 mb-2">Amenities</h3>
+                <div class="grid grid-cols-2 gap-2">
+                  {listing.amenities.map((amenity: string) => (
+                    <div class="flex items-center text-sm text-gray-600">
+                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {amenity}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="mb-6">
+            <div class="flex items-baseline">
+              <span class="text-3xl font-bold text-gray-900">${listing.price_per_night}</span>
+              <span class="text-gray-500 ml-1">per night</span>
+            </div>
+          </div>
+
+          <BookingForm listing={listing} />
+        </div>
+      </div>
+
+      <!-- Cancellation Policy -->
+      <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancellation Policy</h3>
+        <div class="prose text-gray-600">
+          <p>
+            <strong>Flexible:</strong> Full refund 1 day prior to arrival, except fees.
+          </p>
+          <p class="mt-2">
+            Cancel before check-in on your arrival date for a full refund. 
+            If you cancel after that, you won't get a refund for your first night, 
+            but you will be refunded for each remaining night of your reservation.
+          </p>
+        </div>
+      </div>
+
+      <!-- Host Information -->
+      {listing.host && (
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Meet your host</h3>
+          <div class="flex items-center">
+            <img 
+              src={listing.host.avatar || '/default-avatar.jpg'} 
+              alt={listing.host.name}
+              class="h-16 w-16 rounded-full"
+            />
+            <div class="ml-4">
+              <h4 class="text-lg font-medium text-gray-900">{listing.host.name}</h4>
+              <p class="text-gray-600">Host since {new Date(listing.host.created_at).getFullYear()}</p>
+              {listing.host.bio && (
+                <p class="text-sm text-gray-600 mt-2">{listing.host.bio}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </main>
+</Layout>

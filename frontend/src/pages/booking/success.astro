@@ -1,0 +1,156 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const url = new URL(Astro.request.url);
+const sessionId = url.searchParams.get('session_id');
+---
+
+<Layout title="Booking Confirmed - StaySphere">
+  <main class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <div class="text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+          <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+          Booking Confirmed!
+        </h2>
+        <p class="mt-2 text-sm text-gray-600">
+          Your payment has been processed successfully
+        </p>
+      </div>
+
+      <div id="booking-details" class="bg-white shadow rounded-lg p-6">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p class="mt-2 text-gray-600">Loading booking details...</p>
+        </div>
+      </div>
+
+      <div class="flex space-x-4">
+        <a href="/dashboard/bookings" class="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+          View My Bookings
+        </a>
+        <a href="/listings" class="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md hover:bg-gray-200 transition-colors">
+          Browse More Stays
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script define:vars={{ sessionId }}>
+    const API_BASE = 'http://localhost:8000/api';
+
+    async function confirmPayment() {
+      if (!sessionId) {
+        showError('Invalid session');
+        return;
+      }
+
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/auth/login';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/bookings/confirm-payment`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ session_id: sessionId })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showBookingDetails(result.booking);
+        } else {
+          showError(result.message || 'Failed to confirm payment');
+        }
+      } catch (error) {
+        console.error('Failed to confirm payment:', error);
+        showError('Failed to confirm payment');
+      }
+    }
+
+    function showBookingDetails(booking: any) {
+      const container = document.getElementById('booking-details');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <h3 class="text-lg font-semibold text-gray-900">${booking.listing?.title || 'Property'}</h3>
+            <p class="text-gray-600">${booking.listing?.location || 'Location'}</p>
+          </div>
+          
+          <div class="border-t pt-4">
+            <dl class="space-y-2">
+              <div class="flex justify-between">
+                <dt class="text-sm text-gray-600">Check-in</dt>
+                <dd class="text-sm font-medium text-gray-900">${formatDate(booking.check_in)}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-sm text-gray-600">Check-out</dt>
+                <dd class="text-sm font-medium text-gray-900">${formatDate(booking.check_out)}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-sm text-gray-600">Guests</dt>
+                <dd class="text-sm font-medium text-gray-900">${booking.guests}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-sm text-gray-600">Total Paid</dt>
+                <dd class="text-sm font-medium text-gray-900">$${booking.total_amount}</dd>
+              </div>
+            </dl>
+          </div>
+          
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex">
+              <svg class="h-5 w-5 text-blue-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="ml-3">
+                <h4 class="text-sm font-medium text-blue-800">What's next?</h4>
+                <p class="text-sm text-blue-700 mt-1">
+                  You'll receive a confirmation email shortly. You can also message your host through the platform.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showError(message: string) {
+      const container = document.getElementById('booking-details');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="text-center">
+          <svg class="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <p class="mt-4 text-red-600">${message}</p>
+        </div>
+      `;
+    }
+
+    function formatDate(dateString: string): string {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    // Confirm payment on page load
+    document.addEventListener('DOMContentLoaded', confirmPayment);
+  </script>
+</Layout>

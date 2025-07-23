@@ -1,0 +1,61 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Booking Cancelled - StaySphere">
+  <main class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <div class="text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+          <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+          Booking Cancelled
+        </h2>
+        <p class="mt-2 text-sm text-gray-600">
+          Your booking was not completed
+        </p>
+      </div>
+
+      <div class="bg-white shadow rounded-lg p-6">
+        <div class="text-center space-y-4">
+          <p class="text-gray-700">
+            Don't worry! Your payment was not processed and no charges were made to your account.
+          </p>
+          
+          <div class="bg-yellow-50 rounded-lg p-4">
+            <div class="flex">
+              <svg class="h-5 w-5 text-yellow-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="ml-3">
+                <h4 class="text-sm font-medium text-yellow-800">What happened?</h4>
+                <p class="text-sm text-yellow-700 mt-1">
+                  You cancelled the payment process or there was an issue with your payment method.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex space-x-4">
+        <button onclick="history.back()" class="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+          Try Again
+        </button>
+        <a href="/listings" class="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md hover:bg-gray-200 transition-colors">
+          Browse Stays
+        </a>
+      </div>
+
+      <div class="text-center">
+        <p class="text-sm text-gray-500">
+          Need help? 
+          <a href="/contact" class="text-blue-600 hover:text-blue-500">Contact our support team</a>
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

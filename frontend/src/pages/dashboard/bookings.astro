@@ -1,0 +1,256 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="My Bookings - StaySphere">
+  <main class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">My Bookings</h1>
+        <p class="mt-2 text-gray-600">Manage your upcoming and past stays</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="mb-6">
+        <nav class="flex space-x-8">
+          <button id="tab-upcoming" class="tab-button active border-b-2 border-blue-500 py-2 px-1 text-sm font-medium text-blue-600">
+            Upcoming
+          </button>
+          <button id="tab-past" class="tab-button border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+            Past
+          </button>
+          <button id="tab-cancelled" class="tab-button border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+            Cancelled
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bookings List -->
+      <div id="bookings-container" class="space-y-6">
+        <div class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="mt-4 text-lg text-gray-500">Loading your bookings...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = 'http://localhost:8000/api';
+    let allBookings: any[] = [];
+    let currentFilter = 'upcoming';
+
+    async function loadBookings() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/auth/login';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/bookings`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          allBookings = result.data || [];
+          filterBookings(currentFilter);
+        } else {
+          showError('Failed to load bookings');
+        }
+      } catch (error) {
+        console.error('Failed to load bookings:', error);
+        showError('Failed to load bookings');
+      }
+    }
+
+    function filterBookings(filter: string) {
+      currentFilter = filter;
+      const now = new Date();
+      let filteredBookings: any[] = [];
+
+      switch (filter) {
+        case 'upcoming':
+          filteredBookings = allBookings.filter(booking => 
+            new Date(booking.check_in) > now && booking.status !== 'cancelled'
+          );
+          break;
+        case 'past':
+          filteredBookings = allBookings.filter(booking => 
+            new Date(booking.check_out) < now && booking.status !== 'cancelled'
+          );
+          break;
+        case 'cancelled':
+          filteredBookings = allBookings.filter(booking => booking.status === 'cancelled');
+          break;
+      }
+
+      renderBookings(filteredBookings);
+      updateTabStyles(filter);
+    }
+
+    function renderBookings(bookings: any[]) {
+      const container = document.getElementById('bookings-container');
+      if (!container) return;
+
+      if (bookings.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="mt-4 text-lg text-gray-500">No ${currentFilter} bookings found</p>
+            <a href="/listings" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+              Browse Stays
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = bookings.map(booking => `
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <div class="md:flex">
+            <div class="md:w-1/3">
+              <img 
+                src="${booking.listing?.images?.[0] || '/placeholder-image.jpg'}" 
+                alt="${booking.listing?.title || 'Property'}"
+                class="h-48 w-full object-cover md:h-full"
+              />
+            </div>
+            <div class="p-6 md:w-2/3">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h3 class="text-xl font-semibold text-gray-900">${booking.listing?.title || 'Property'}</h3>
+                  <p class="text-gray-600">${booking.listing?.location || 'Location'}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(booking.status)}">
+                  ${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </span>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p class="text-sm text-gray-500">Check-in</p>
+                  <p class="font-medium">${formatDate(booking.check_in)}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Check-out</p>
+                  <p class="font-medium">${formatDate(booking.check_out)}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Guests</p>
+                  <p class="font-medium">${booking.guests} guest${booking.guests > 1 ? 's' : ''}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Total</p>
+                  <p class="font-medium">$${booking.total_amount}</p>
+                </div>
+              </div>
+              
+              <div class="flex space-x-3">
+                <a href="/listings/${booking.listing?.id}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                  View Property
+                </a>
+                ${booking.status === 'confirmed' && new Date(booking.check_in) > new Date() ? `
+                  <button onclick="cancelBooking(${booking.id})" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                    Cancel Booking
+                  </button>
+                ` : ''}
+                ${booking.status === 'completed' && !booking.review ? `
+                  <a href="/reviews/create?booking=${booking.id}" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                    Leave Review
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getStatusColor(status: string): string {
+      switch (status) {
+        case 'confirmed': return 'bg-green-100 text-green-800';
+        case 'pending': return 'bg-yellow-100 text-yellow-800';
+        case 'cancelled': return 'bg-red-100 text-red-800';
+        case 'completed': return 'bg-blue-100 text-blue-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    function formatDate(dateString: string): string {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function updateTabStyles(activeTab: string) {
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+      });
+
+      const activeButton = document.getElementById(`tab-${activeTab}`);
+      if (activeButton) {
+        activeButton.classList.add('active', 'border-blue-500', 'text-blue-600');
+        activeButton.classList.remove('border-transparent', 'text-gray-500');
+      }
+    }
+
+    function showError(message: string) {
+      const container = document.getElementById('bookings-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p class="mt-4 text-lg text-red-500">${message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Global function for cancel booking
+    (window as any).cancelBooking = async function(bookingId: number) {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          loadBookings(); // Reload bookings
+        } else {
+          alert('Failed to cancel booking');
+        }
+      } catch (error) {
+        console.error('Failed to cancel booking:', error);
+        alert('Failed to cancel booking');
+      }
+    };
+
+    // Tab event listeners
+    document.getElementById('tab-upcoming')?.addEventListener('click', () => filterBookings('upcoming'));
+    document.getElementById('tab-past')?.addEventListener('click', () => filterBookings('past'));
+    document.getElementById('tab-cancelled')?.addEventListener('click', () => filterBookings('cancelled'));
+
+    // Load bookings on page load
+    document.addEventListener('DOMContentLoaded', loadBookings);
+  </script>
+</Layout>

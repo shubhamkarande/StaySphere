@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Build outputs
+dist/
+build/
+public/build/
+
+# Cache and logs
+*.log
+.cache/
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+bootstrap/cache/
+storage/app/public/
+storage/framework/
+storage/logs/
+
+# Astro specific
+.astro/
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+
+# Uploads
+public/uploads/
+storage/app/uploads/
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.backup
+*.bak
+
+# Package manager lock files (optional - you may want to commit these)
+# package-lock.json
+# composer.lock

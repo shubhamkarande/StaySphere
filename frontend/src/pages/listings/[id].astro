@@ -1,0 +1,169 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BookingForm from '../../components/BookingForm.astro';
+import ReviewBox from '../../components/ReviewBox.astro';
+import ImageGallery from '../../components/ImageGallery.astro';
+
+const { id } = Astro.params;
+const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000/api';
+
+let listing = null;
+let reviews = [];
+let error = null;
+
+try {
+  // Fetch listing details
+  const listingResponse = await fetch(`${API_BASE}/listings/${id}`);
+  if (listingResponse.ok) {
+    const listingData = await listingResponse.json();
+    listing = listingData.data;
+  } else {
+    error = 'Listing not found';
+  }
+
+  // Fetch reviews
+  if (listing) {
+    const reviewsResponse = await fetch(`${API_BASE}/listings/${id}/reviews`);
+    if (reviewsResponse.ok) {
+      const reviewsData = await reviewsResponse.json();
+      reviews = reviewsData.data || [];
+    }
+  }
+} catch (err) {
+  error = 'Failed to load listing';
+  console.error('Error fetching listing:', err);
+}
+
+if (error || !listing) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout title={`${listing.title} - StaySphere`}>
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Listing Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">{listing.title}</h1>
+      <div class="flex items-center space-x-4 text-sm text-gray-600">
+        {listing.average_rating > 0 && (
+          <div class="flex items-center">
+            <svg class="w-4 h-4 text-yellow-400 fill-current mr-1" viewBox="0 0 20 20">
+              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+            </svg>
+            <span>{listing.average_rating.toFixed(1)} ({listing.total_reviews} reviews)</span>
+          </div>
+        )}
+        <span>•</span>
+        <span>{listing.city}, {listing.country}</span>
+      </div>
+    </div>
+
+    <!-- Image Gallery -->
+    <ImageGallery images={listing.images} title={listing.title} />
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Property Info -->
+        <div class="border-b pb-8">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900">
+                {listing.property_type} hosted by {listing.host.name}
+              </h2>
+              <p class="text-gray-600">
+                {listing.accommodates} guests • {listing.bedrooms} bedrooms • {listing.bathrooms} bathrooms
+              </p>
+            </div>
+            <img
+              src={listing.host.avatar || '/default-avatar.jpg'}
+              alt={listing.host.name}
+              class="w-12 h-12 rounded-full"
+            />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="border-b pb-8">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">About this place</h3>
+          <p class="text-gray-700 whitespace-pre-line">{listing.description}</p>
+        </div>
+
+        <!-- Amenities -->
+        {listing.amenities && listing.amenities.length > 0 && (
+          <div class="border-b pb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">What this place offers</h3>
+            <div class="grid grid-cols-2 gap-4">
+              {listing.amenities.map((amenity) => (
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  <span class="text-gray-700 capitalize">{amenity.replace('_', ' ')}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Map -->
+        <div class="border-b pb-8">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Where you'll be</h3>
+          <div id="map" class="h-64 bg-gray-200 rounded-lg"></div>
+          <p class="text-gray-600 mt-2">{listing.address}, {listing.city}, {listing.country}</p>
+        </div>
+
+        <!-- Reviews -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Reviews ({listing.total_reviews})
+          </h3>
+          {reviews.length > 0 ? (
+            <div class="space-y-6">
+              {reviews.slice(0, 6).map((review) => (
+                <ReviewBox review={review} />
+              ))}
+              {reviews.length > 6 && (
+                <button class="text-blue-600 hover:text-blue-700 font-medium">
+                  Show all {listing.total_reviews} reviews
+                </button>
+              )}
+            </div>
+          ) : (
+            <p class="text-gray-500">No reviews yet. Be the first to review this place!</p>
+          )}
+        </div>
+      </div>
+
+      <!-- Booking Sidebar -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-6">
+          <BookingForm listing={listing} />
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Map Script -->
+  <script>
+    import L from 'leaflet';
+    
+    // Initialize map
+    const listing = JSON.parse(document.getElementById('listing-data')?.textContent || '{}');
+    
+    if (listing.latitude && listing.longitude) {
+      const map = L.map('map').setView([listing.latitude, listing.longitude], 15);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      
+      L.marker([listing.latitude, listing.longitude])
+        .addTo(map)
+        .bindPopup(listing.title);
+    }
+  </script>
+
+  <!-- Hidden data for JavaScript -->
+  <script type="application/json" id="listing-data" set:html={JSON.stringify(listing)}></script>
+</Layout>
